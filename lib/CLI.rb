@@ -1,15 +1,16 @@
 class CommandLineInterface 
 
+    #place reader for the printer since it will be responsible for grabbing the id's for the other classes later on. 
+    #no actions are possible without connecting to a printer 
     attr_reader :printer 
 
     def run
         @prompt = TTY::Prompt.new
-        @font = TTY::Prompt.new(:standard)
-        puts "\n\n=================="
+        puts "\n\n===================="
         puts "3D Printing!"
-        puts "=================="
-        puts " 3D Printer Status: Ready"
-        puts "=================="
+        puts "========================"
+        puts "3D Printer Status: Ready"
+        puts "========================"
         while true 
             main_menu
         end 
@@ -17,6 +18,8 @@ class CommandLineInterface
 
     def main_menu
         choices = ["Connect/Add New Printer", "Print a 3D model", "Update 3D model", "Search for printed models", "Delete 3D Printer", "EXIT"]
+        #prompt enum will allow the user to select any of the options by entering the number of the option which will take them to a method
+        #that will carry out the task
         choice = @prompt.enum_select("Select an option to begin:", choices)
         if choice == "Setup/Connect to Printer"
             connect 
@@ -35,15 +38,16 @@ class CommandLineInterface
     end
 
         def connect 
-            choice = @prompt.enum_select("Set up your printer to begin", ["Connect", "Add New"])
+            choice = @prompt.enum_select("Set up your printer to begin:", ["Connect", "Add New"])
+            #here the user will have to connect by entering a printers name and .chomp will take in the string and search for a corresponding name
             if choice == "Connect"
                 puts "Enter the printer's name"
                 name = gets.chomp 
                 if Printer.find_by(name: name)
-                    @printer = Printer.find_by(name: name)
-                    puts "The printer #{name} has been connected"
+                    #placed a @printer = to set the instance of the printer equal to the name entered
+                @printer = Printer.find_by(name: name)
+                puts "The printer #{name} has been connected"
                 else puts "This printer is not available try adding a new one"
-                    sleep 2
                 end 
             elsif choice == "Add New"
                 name = nil 
@@ -51,12 +55,14 @@ class CommandLineInterface
                 until Printer.find_by(name: name)
                     name = gets.chomp
                     if Printer.find_by(name: name)
+                        #if the name set to this printer is already the inputted name it will return this string and name will be set nil
                         puts "This printer is already connected. Please enter a new device"
                         name = nil 
                     else 
                         puts "Printer #{name} is connected!"
-                        #make sure duplicate printers are not made
+                        #make sure duplicate printers are not made using find_or_create
                         @printer = Printer.find_or_create_by(name: name)
+                        #sleep delays the output to give a better aesthetic 
                         sleep 2 
                     end 
                 end 
@@ -64,11 +70,14 @@ class CommandLineInterface
         end 
 
         def print_model
-            if @printer 
                 puts "Enter the name of the 3D model you would like to print"
                 design_name = gets.chomp 
+                #this takes in the name of the design file being printed
                 designz = Design.find_or_create_by(name: design_name)
-                if Product.find_by(design_id: designz.id, printer_id: self.user.id)
+                #then it is set equal to the instance of the design
+                if Product.find_by(design_id: designz, printer_id: self.printer.id)
+                    #then the product will take search for the design by using the id's of the printer and design which are attributed to
+                    #the product
                     puts "This model has already been printed, choose a different file"
                     sleep 2 
                     return 
@@ -85,7 +94,6 @@ class CommandLineInterface
                         return 
                     end 
                 end
-            end
         end
         
         def design_search 
@@ -104,13 +112,11 @@ class CommandLineInterface
                 puts "#{product.name} printed..."
                 puts "Name: #{printed.name}"
                 puts "Material #{printed.material}"
-                puts ""
             end 
         end
 
         def update_model 
             choices = []
-            if @printer 
                 if Product.find_by(printer_id: self.printer.id)
                     printer_models = Product.where(printer_id: self.printer.id)
                     printer_models.each do |review|
@@ -142,11 +148,10 @@ class CommandLineInterface
                     return 
                 end  
                 return 
-            end
+            
         end
 
         def delete_printer 
-            if @printer 
                 choice = @prompt.enum_select("Do you want to disconnect from this printer?", ["Yes", "No"])
                 if choice == "Yes"
                     disconnect = Printer.find_by(id: self.printer.id)[0]
@@ -159,7 +164,7 @@ class CommandLineInterface
                 elsif choice == "No"
                     return 
                 end 
-            end 
+             
         end 
      
     
