@@ -1,5 +1,8 @@
 class CommandLineInterface 
 
+    #The CLI messed up file is where I struggled on the old format and changed it to this one.
+    #That file also contains the sources that helped me 
+
     #place reader for the printer since it will be responsible for grabbing the id's for the other classes later on. 
     #no actions are possible without connecting to a printer 
     attr_reader :printer 
