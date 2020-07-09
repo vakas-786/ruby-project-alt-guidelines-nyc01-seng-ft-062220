@@ -1,3 +1,17 @@
 require_relative '../config/environment'
+require 'pry'
+cli = CommandLineInterface.new()
+printer = cli.run()
 
-puts "hello world"
+cli.printer = printer
+cli.main_menu
+
+
+
+
+
+
+# cli.printer = printer 
+# cli.main_menu 
+
+
